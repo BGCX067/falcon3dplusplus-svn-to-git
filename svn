@@ -1,0 +1,129 @@
+#include"Ogre.h"
+using namespace Ogre;
+#include "InputListener.cpp"
+#include "PremiereApplication.h"
+
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+#define WIN32_LEAN_AND_MEAN
+#include "windows.h"
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR strCmdLine, INT )
+#else
+int main(int argc, char *argv[])
+#endif
+{
+    // Création de l'application de test "PremiereApplication.h".
+    // PremiereApplication app;
+
+    try {
+
+    // Creation de l'objet root
+    Ogre::Root* root=new Ogre::Root();
+
+    // Creation de l'objet RenderWindow
+    if(!root->restoreConfig()){    // Test si un fichier de config existe deja
+        if(!root->showConfigDialog()){ // Test si, suite a l'affichage de la boite de dialogue, l'utilisateur a appuyer sur OK ou Annuler
+            delete root;
+            return -1; // On ressort avec un code d'erreur, car l'affichage ne peut etre creer
+        }
+    }
+    Ogre::RenderWindow* pRenderWindow=NULL;
+    pRenderWindow=root->initialise(true,"Test");
+    
+    // Creation du gestionnaire de scene
+    Ogre::SceneManager* pSceneManager=NULL;
+    pSceneManager=root->createSceneManager(Ogre::ST_GENERIC,"SceneManager generic");
+
+    // Creation des ressources
+    Ogre::ResourceGroupManager::getSingleton().addResourceLocation("../../media/materials/scripts","FileSystem","General");
+    Ogre::ResourceGroupManager::getSingleton().addResourceLocation("../../media/materials/textures","FileSystem","General");
+    Ogre::ResourceGroupManager::getSingleton().addResourceLocation("../../media/materials/programs","FileSystem","General");
+    Ogre::ConfigFile cf;
+    cf.load("resources.cfg");
+
+    Ogre::ConfigFile::SectionIterator si=cf.getSectionIterator();
+
+    Ogre::String secNom, typeArch, cheminArch;
+    while(si.hasMoreElements()){
+        secNom = si.peekNextKey();
+        Ogre::ConfigFile::SettingsMultiMap *settings = si.getNext();
+        Ogre::ConfigFile::SettingsMultiMap::iterator it;
+        
+        for (it=settings->begin(); it!=settings->end();++it){
+            typeArch = it->first;
+            cheminArch = it->second;
+            Ogre::ResourceGroupManager::getSingleton().addResourceLocation(cheminArch,typeArch,secNom);
+        }
+    }
+    Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+
+    // Creation d'une scene.
+
+    Plane plan(Vector3::UNIT_Y, 0);
+    MeshManager::getSingleton().createPlane("sol", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plan, 5000, 5000, 1, 1, true, 1, 1, 1, Vector3::UNIT_Z);
+    
+    // Creation du sol.
+    Ogre::Entity* pEntity=pSceneManager->createEntity("EntiteSol", "sol");
+    Ogre::SceneNode* pNode=pSceneManager->getRootSceneNode()->createChildSceneNode("Node");
+    pNode->attachObject(pEntity);
+    pEntity->setMaterialName("Examples/GrassFloor");
+
+    // Creation du cube.
+    Entity *cube= pSceneManager ->createEntity("Cube", "cube.mesh");
+    pNode= pSceneManager->getRootSceneNode()->createChildSceneNode("nodeCube", Vector3::ZERO, Quaternion::IDENTITY);
+    pNode->attachObject(cube);
+    cube->setMaterialName("Examples/Rockwall");
+    pNode->setPosition(0.0, 50.0, 0.0);
+
+    // Creation de la camera.
+    Ogre::Camera* pCamera=pSceneManager->createCamera("Camera");
+    pCamera->setPosition(Ogre::Vector3(0,50,400));
+    pCamera->lookAt(Ogre::Vector3(0,0,0));
+
+    // Creation du Viewport.
+    Ogre::Viewport* pViewport = pRenderWindow->addViewport(pCamera);
+    pViewport->setBackgroundColour(Ogre::ColourValue(0,0,0,3));
+    pCamera->setAspectRatio(Ogre::Real(pViewport->getActualWidth()) / Ogre::Real(pViewport->getActualHeight()));
+
+    // Boucle de rendu sans fin !!!
+    root->startRendering();
+
+    // Possible solution pour stopper la boucle infinie! (ne fonctionne pas pour le momment)
+/*    while(true) {
+
+        Ogre::WindowEventUtilities::messagePump();
+ 
+        if(pRenderWindow->isClosed())
+            return false;
+ 
+        if(!root->renderOneFrame())
+            return false;
+    }
+*/
+
+
+    //Application de test a utiliser que quand tout le reste est commenté sauf la ligne 21(Création de l'app de test).
+    //   app.go();
+
+
+    } catch( Ogre::Exception& e ) {
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+        MessageBox( NULL, e.getFullDescription().c_str(), "An exception has occured!", MB_OK | MB_ICONERROR | MB_TASKMODAL);
+#else
+        std::cerr << "An exception has occured: " <<
+            e.getFullDescription().c_str() << std::endl;
+#endif
+    }
+
+    return 0;
+}
+
+#ifdef __cplusplus
+}
+#endif 

@@ -1,0 +1,17 @@
+Installation OpenNI
+
+Telecharger les drivers => https://github.com/avin2/SensorKinect
+
+Aller sur le site OpenNI,
+  Onglets Download -> OpenNi Modules.
+  Telecharger et installer le OpenNI Binaries stable en 32bits devellopements pour avoir les samples
+  Telecharger et installer le OpenNI Compliant Middleware Binaries stable en 32bits devellopements
+  Telecharger et installer le OpenNI Compliant Hardware Binaries 32bits
+  (Version 64 bits non optimisé pour tout ces soft).
+  
+  Pour pourvoir prog sous visual studio =
+  s"assurer d'avoir le dernier frameworks 4
+  
+  Et Enjoy.
+  Comme je n'est finalement pas utilisé le bullshit de OpenCV je vous epargne tout l'installation plus que relou...
+    
